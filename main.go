@@ -22,6 +22,7 @@ func main() {
 	v1 := r.Group("/api/v1")
 	{
 		v1.POST("comment", addComment)
+		v1.GET("comment", getComments)
 	}
 
 	r.Run()
@@ -41,6 +42,18 @@ func addComment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 	} else {
 		c.JSON(http.StatusCreated, gin.H{"New Comment ID": id})
+	}
+}
+
+func getComments(c *gin.Context) {
+	comments, err := models.GetComments(10)
+	checkErr(err)
+
+	if comments == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No Records Found"})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"data": comments})
 	}
 }
 

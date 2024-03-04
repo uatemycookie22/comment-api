@@ -2,9 +2,11 @@ package models
 
 import (
 	"database/sql"
+	"strconv"
 )
 
 type Comment struct {
+	Id      int    `json:"id""`
 	Message string `json:"message"`
 }
 
@@ -38,4 +40,37 @@ func CreateComment(newComment Comment) (int, error) {
 	}
 
 	return int(id), nil
+}
+
+// Returns the id of the created row
+func GetComments(count int) ([]Comment, error) {
+	limitCount := strconv.Itoa(count)
+	rows, err := DB.Query("SELECT id, message from comments LIMIT ?", limitCount)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	comments := make([]Comment, 0)
+
+	for rows.Next() {
+		singleComment := Comment{}
+		err = rows.Scan(&singleComment.Id, &singleComment.Message)
+
+		if err != nil {
+			return nil, err
+		}
+
+		comments = append(comments, singleComment)
+	}
+
+	err = rows.Err()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return comments, err
 }
